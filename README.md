@@ -1,6 +1,7 @@
-## Final Project Report
-### Overall Project Description:
-This Final Project is a reaction-time based game that was implemented using the capabilities of a 5-stage pipelined processor and the Nexys A7 FPGA board. The specifications of this game are below:
+## Overall Project Description:
+This Final Project is a reaction-time based game that was implemented on a physcial Nexys A7 FPGA board using the capabilities of a 5-stage pipelined processor coded/described in Verilog
+
+### Game Specifications:
 -	Game screen defaults to the color white in between rounds
 -	During each round, screen will change color to either blue or green
     -	If blue: to pass this round, player must react by hitting button on board before time runs out and screen changes back to white
@@ -83,7 +84,16 @@ loop:
 For each of the 6 rounds, simple behavioral verilog code is used to determine when that round is active and whether the player successfully passed it or not. For example, the round1Signal is asserted whenever the value of the timer register ($r28) is greater than 400000000 and less than 500000000. These upper and lower bounds were calculated using the fact that the period of a 100 MHz clock is 10 nanoseconds and 1 second is 109 nanoseconds. From here a mux is used to assign the value of $r2 to 32’d1 if playerReaction is asserted while round1Signal is high, and 32’d0 otherwise. If $r2 = 32’d1, then the value of $r3 will be incremented as detailed in the description of the assembly program above. This process can be repeated for every round, resulting in registers 3, 5, 7, 9, 11, and 13 holding the scores for each round at the end.  
   
 Finally, these scores can be used to determine whether the player won or lost the game. The loseSignal can be asserted in the middle of the game if a player fails to react to a “blue” round or improperly reacts to a “green” round, but the win signal can only be asserted once the final round is over since the player must pass all of them. In order to win, a player’s score for “blue” rounds must be greater than 0 and a player’s score for “green” rounds must be exactly 0. A player loses if their score for a “blue” round is 0 and that round has ended or if their score for a “green” round is greater than 0 at any point. The implementation of this logic is shown below:
- 
+
+```verilog
+	// Rounds 1, 2, 3, 5 = Blue rounds
+	// Rounds 4, 6 = Green rounds
+	assign winSignal = (round1Score > 0) && (round2Score > 0) && (round3Score > 0) && (round4Score == 0) 
+		&& (round5Score > 0) && (round6Score == 0) && (timer > 2050000000);
+	assign loseSignal = ((round1Score == 0) && (timer > 500000000)) || ((round2Score == 0) && (timer > 950000000))
+        || ((round3Score == 0) && (timer > 1225000000)) || (round4Score > 0)
+        || ((round5Score == 0) && (timer > 1800000000)) || (round6Score > 0);
+```
 
 As detailed in the Input/Output section of this report, the round signals, winSignal, and loseSignal are then used to determine what should be output onto the VGA screen. 
 
