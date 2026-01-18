@@ -44,7 +44,7 @@ This Duke University ECE 350 Final Project is a reaction-time based game that wa
 	- Used to enable writing to the PC register and the I/R register of the F/D pipe when a branch is being taken or a stall is not needed
 
 ### CPU Diagram:
-![CPU Diagram](<./Processor Full Diagram.jpeg>)
+![CPU Diagram](<./Processor Full Diagram.jpg>)
 
 ## Game Specifications:
 
