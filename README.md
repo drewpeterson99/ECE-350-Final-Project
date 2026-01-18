@@ -66,7 +66,7 @@ The output of the main Wrapper module consists solely of VGA signals. The VGACon
 -	loseSignal - This signal indicates that the player has “lost” the game and is detailed in the next section of this report. It is used as a selector to a multiplexer such that if the signal is high, colorOut is set to red (12’hf00).
 -	startSignal: This signal is used as a selector to a multiplexor such that if it is low, colorOut is set to black (12’h000).
 
-If winSignal, loseSignal, inGreenRound, and inBlueRound are all low while startSignal is high, the default colorOut is white (12’hfff). The implementation of this logic is shown below:
+If winSignal, loseSignal, inGreenRound, and inBlueRound are all low while startSignal is high, the default colorOut is white (12’hfff). The implementation of this logic is located at [VGAController.v](./VGAController.v) and shown below:
 
 ```verilog
 	// Assign to output color from register if active
