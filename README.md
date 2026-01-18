@@ -19,6 +19,22 @@ The output of the main Wrapper module consists solely of VGA signals. The VGACon
 -	startSignal: This signal is used as a selector to a multiplexor such that if it is low, colorOut is set to black (12’h000).
 
 If winSignal, loseSignal, inGreenRound, and inBlueRound are all low while startSignal is high, the default colorOut is white (12’hfff). The implementation of this logic is shown below:
+
+```verilog
+	// Assign to output color from register if active
+	wire[BITS_PER_COLOR-1:0] colorOut; 			  // Output color
+	
+	wire [11:0] tempColorOut1, tempColorOut2, tempColorOut3, tempColorOut4, tempColorOut5;
+	assign tempColorOut1 = winSignal ? colorData : 12'hfff; // if winSignal, colorOut should be the winImage, otherwise should be white
+	assign tempColorOut2 = inBlueRound ? 12'h00f : tempColorOut1; // if inBlueRound, colorOut should be blue
+	assign tempColorOut3 = inGreenRound ? 12'h0f0 : tempColorOut2; // if inGreenRound, colorOut should be green
+	assign tempColorOut4 = loseSignal ? 12'hf00 : tempColorOut3; // if loseSignal, colorOut should be red
+	assign tempColorOut5 = startSignal ? tempColorOut4 : 12'h000; // if startSignal is off, game is paused and colorOut should be black
+	assign colorOut = active ? tempColorOut5 : 12'd0; // When not active, output black
+
+	// Quickly assign the output colors to their channels using concatenation
+	assign {VGA_R, VGA_G, VGA_B} = colorOut;
+```
  
 The output of this VGAController module is routed directly to the output of the main Wrapper module, which contains the processor, memory elements (regfile, ROM, RAM), VGA modules, and the game’s behavioral code.
 
