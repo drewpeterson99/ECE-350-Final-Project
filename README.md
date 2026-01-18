@@ -5,7 +5,8 @@ This Duke University ECE 350 Final Project is a reaction-time based game that wa
 
 ### Overview
 - Five stage pipeline breaks instruction processing into five sequential steps — Fetch (IF), Decode (ID), Execute (EX), Memory Access (MEM), and Write Back (WB)
-	- Pipeline registers clocked on negative edge, everything else (regfile, ROM, RAM, etc.) clocked on positive edge
+	- Main Verilog file here: [processor.v](./processor.v)
+- Pipeline registers clocked on negative edge, everything else (regfile, ROM, RAM, etc.) clocked on positive edge
 - Multicycle operations implemented (multiplication/division)
 - Hazard mitigation implemented:
 	- Hardware (bubble) stalls
