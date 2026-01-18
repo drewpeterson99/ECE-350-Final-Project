@@ -14,11 +14,8 @@ Input to this module is relatively simple. The first input is startSignal, which
 The output of the main Wrapper module consists solely of VGA signals. The VGAController module from Lab 5 was modified with additional inputs and a series of multiplexers used to select the proper colorOut based on what state the game is currently in. The following four inputs were added:
 -	inBlueRound: This signal is asserted when the game is in the middle of a “blue” round. It is used as a selector to a multiplexer such that if the signal is high, colorOut is set to blue (12’h00f)
 -	inGreenRound -  This signal is asserted when the game is in the middle of a “green” round. It is used as a selector to a multiplexer such that if the signal is high, colorOut is set to green (12’h0f0)
--	winSignal - This signal indicates whether the player has "won" the game and is detailed in the next section of this report. It is used as a selector to a multiplexor such that if the signal is high, colorOut is set to the colorData of the custom winImage. This win screen is shown below:
- 
--	loseSignal - This signal indicates that the player has “lost” the game and is detailed in the next section of this report. It is used as a selector to a multiplexer such that if the signal is high, colorOut is set to red (12’hf00). This loss screen is shown below:
- 
-
+-	winSignal - This signal indicates whether the player has "won" the game and is detailed in the next section of this report. It is used as a selector to a multiplexor such that if the signal is high, colorOut is set to the colorData of the custom winImage.
+-	loseSignal - This signal indicates that the player has “lost” the game and is detailed in the next section of this report. It is used as a selector to a multiplexer such that if the signal is high, colorOut is set to red (12’hf00).
 -	startSignal: This signal is used as a selector to a multiplexor such that if it is low, colorOut is set to black (12’h000).
 
 If winSignal, loseSignal, inGreenRound, and inBlueRound are all low while startSignal is high, the default colorOut is white (12’hfff). The implementation of this logic is shown below:
@@ -36,14 +33,39 @@ The 5-stage pipelined processor created during class was in this project/game as
 -	$r(5, 7, 9, 11, 13): this register acts as the Round (2, 3, 4, 5, 6) score register and is incremented by the processor according to the game’s assembly code. A wire is used by the behavioral verilog code to directly read its value and determine whether the player won or lost. If its value is greater than 0, the player must have reacted during Round (2, 3, 4, 5, 6)
 
 The full assembly program that is loaded into the processor’s instruction memory is below:
- 
-	
-For each of the 6 rounds, simple behavioral verilog code is used to determine when that round is active and whether the player successfully passed it or not. For example, the round1Signal is asserted whenever the value of the timer register ($r28) is greater than 400000000 and less than 500000000. These upper and lower bounds were calculated using the fact that the period of a 100 MHz clock is 10 nanoseconds and 1 second is 109 nanoseconds. From here a mux is used to assign the value of $r2 to 32’d1 if playerReaction is asserted while round1Signal is high, and 32’d0 otherwise. If $r2 = 32’d1, then the value of $r3 will be incremented as detailed in the description of the assembly program above. This process can be repeated for every round, resulting in registers 3, 5, 7, 9, 11, and 13 holding the scores for each round at the end. The implementation of this logic is shown below:
- 
- 
- 
- 
 
+```
+# $r1 = 1 if startSignal, 0 otherwise
+
+# $r29 = 1
+# $r28 = "timer"
+
+# $r2 = 1 if round1Win
+# $r3 = round1Score
+# $r4 = 1 if round2Win
+# $r5 = round2Score
+# ...
+
+idle:
+    bne     $r0, $r1, loop
+    j       idle
+
+loop:
+    add     $r28, $r28, $r29
+
+    add     $r3, $r3, $r2
+    add     $r5, $r5, $r4
+    add     $r7, $r7, $r6
+    add     $r9, $r9, $r8
+    add     $r11, $r11, $r10
+    add     $r13, $r13, $r12
+
+    bne     $r0, $r1, loop
+    j       idle
+```
+	
+For each of the 6 rounds, simple behavioral verilog code is used to determine when that round is active and whether the player successfully passed it or not. For example, the round1Signal is asserted whenever the value of the timer register ($r28) is greater than 400000000 and less than 500000000. These upper and lower bounds were calculated using the fact that the period of a 100 MHz clock is 10 nanoseconds and 1 second is 109 nanoseconds. From here a mux is used to assign the value of $r2 to 32’d1 if playerReaction is asserted while round1Signal is high, and 32’d0 otherwise. If $r2 = 32’d1, then the value of $r3 will be incremented as detailed in the description of the assembly program above. This process can be repeated for every round, resulting in registers 3, 5, 7, 9, 11, and 13 holding the scores for each round at the end.  
+  
 Finally, these scores can be used to determine whether the player won or lost the game. The loseSignal can be asserted in the middle of the game if a player fails to react to a “blue” round or improperly reacts to a “green” round, but the win signal can only be asserted once the final round is over since the player must pass all of them. In order to win, a player’s score for “blue” rounds must be greater than 0 and a player’s score for “green” rounds must be exactly 0. A player loses if their score for a “blue” round is 0 and that round has ended or if their score for a “green” round is greater than 0 at any point. The implementation of this logic is shown below:
  
 
