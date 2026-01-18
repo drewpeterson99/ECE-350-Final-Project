@@ -5,7 +5,7 @@ This Duke University ECE 350 Final Project is a reaction-time based game that wa
 
 ### Overview
 - Five stage pipeline breaks instruction processing into five sequential steps — Fetch (IF), Decode (ID), Execute (EX), Memory Access (MEM), and Write Back (WB)
-	- Main Verilog file here: [processor.v](./processor.v)
+	- Main Verilog file here: [processor.v](./Code/processor.v)
 - Pipeline registers clocked on negative edge, everything else (regfile, ROM, RAM, etc.) clocked on positive edge
 - Multicycle operations implemented (multiplication/division)
 - Hazard mitigation implemented:
@@ -66,7 +66,7 @@ The output of the main Wrapper module consists solely of VGA signals. The VGACon
 -	loseSignal - This signal indicates that the player has “lost” the game and is detailed in the next section of this report. It is used as a selector to a multiplexer such that if the signal is high, colorOut is set to red (12’hf00).
 -	startSignal: This signal is used as a selector to a multiplexor such that if it is low, colorOut is set to black (12’h000).
 
-If winSignal, loseSignal, inGreenRound, and inBlueRound are all low while startSignal is high, the default colorOut is white (12’hfff). The implementation of this logic is located at [VGAController.v](./VGAController.v) and shown below:
+If winSignal, loseSignal, inGreenRound, and inBlueRound are all low while startSignal is high, the default colorOut is white (12’hfff). The implementation of this logic is located at [VGAController.v](./Code/VGAController.v) and shown below:
 
 ```verilog
 	// Assign to output color from register if active
@@ -96,7 +96,7 @@ The 5-stage pipelined processor detailed above was acts as both a timer and a sc
 -	$r(4, 6, 8, 10, 12): this register is wired directly by the behavioral verilog code to 32’d1 if playerReaction = high and it is currently Round (2, 3, 4, 5, 6), 32’d0 otherwise. Its value is used in the assembly code to increment $r(5, 7, 9, 11, 13)
 -	$r(5, 7, 9, 11, 13): this register acts as the Round (2, 3, 4, 5, 6) score register and is incremented by the processor according to the game’s assembly code. A wire is used by the behavioral verilog code to directly read its value and determine whether the player won or lost. If its value is greater than 0, the player must have reacted during Round (2, 3, 4, 5, 6)
 
-The full assembly program that is loaded into the processor’s instruction memory is located at [finalInstructionMemory.s](./finalInstructionMemory.s) and shown below:
+The full assembly program that is loaded into the processor’s instruction memory is located at [finalInstructionMemory.s](./Code/finalInstructionMemory.s) and shown below:
 
 ```
 # $r1 = 1 if startSignal, 0 otherwise
@@ -130,7 +130,7 @@ loop:
 	
 For each of the 6 rounds, simple behavioral verilog code is used to determine when that round is active and whether the player successfully passed it or not. For example, the round1Signal is asserted whenever the value of the timer register ($r28) is greater than 400000000 and less than 500000000. These upper and lower bounds were calculated using the fact that the period of a 100 MHz clock is 10 nanoseconds and 1 second is 109 nanoseconds. From here a mux is used to assign the value of $r2 to 32’d1 if playerReaction is asserted while round1Signal is high, and 32’d0 otherwise. If $r2 = 32’d1, then the value of $r3 will be incremented as detailed in the description of the assembly program above. This process can be repeated for every round, resulting in registers 3, 5, 7, 9, 11, and 13 holding the scores for each round at the end.  
   
-Finally, these scores can be used to determine whether the player won or lost the game. The loseSignal can be asserted in the middle of the game if a player fails to react to a “blue” round or improperly reacts to a “green” round, but the win signal can only be asserted once the final round is over since the player must pass all of them. In order to win, a player’s score for “blue” rounds must be greater than 0 and a player’s score for “green” rounds must be exactly 0. A player loses if their score for a “blue” round is 0 and that round has ended or if their score for a “green” round is greater than 0 at any point. The implementation of this logic is located at [regfile.v](./regfile.v) and shown below:
+Finally, these scores can be used to determine whether the player won or lost the game. The loseSignal can be asserted in the middle of the game if a player fails to react to a “blue” round or improperly reacts to a “green” round, but the win signal can only be asserted once the final round is over since the player must pass all of them. In order to win, a player’s score for “blue” rounds must be greater than 0 and a player’s score for “green” rounds must be exactly 0. A player loses if their score for a “blue” round is 0 and that round has ended or if their score for a “green” round is greater than 0 at any point. The implementation of this logic is located at [regfile.v](./Code/regfile.v) and shown below:
 
 ```verilog
 	// Rounds 1, 2, 3, 5 = Blue rounds
