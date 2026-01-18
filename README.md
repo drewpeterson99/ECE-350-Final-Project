@@ -4,13 +4,15 @@ This Duke University ECE 350 Final Project is a reaction-time based game that wa
 ## CPU Design:
 
 ### Overview
-- Five stage pipeline - breaks instruction processing into five sequential steps—Instruction Fetch (IF), Decode (ID), Execute (EX), Memory Access (MEM), and Write Back (WB)
+- Five stage pipeline breaks instruction processing into five sequential steps — Fetch (IF), Decode (ID), Execute (EX), Memory Access (MEM), and Write Back (WB)
 	- Pipeline registers clocked on negative edge, everything else (regfile, ROM, RAM, etc.) clocked on positive edge
 - Multicycle operations implemented (multiplication/division)
 - Hazard mitigation implemented:
 	- Hardware (bubble) stalls
 	- WX, MX, WM bypassing
 	- Branch recovery
+
+ ![CPU Diagram](<./Processor Full Diagram.jpg>)
 
 ### Multicycle Operation Design Choices
 - When a mult/div instruction reaches Execute, every instruction behind it is stalled until the mult/div module asserts its RDY signal
@@ -42,9 +44,6 @@ This Duke University ECE 350 Final Project is a reaction-time based game that wa
 	- Used to insert a no-op into F/D and D/E pipes when a stall is needed or a branch recovery is needed
 - enableSignal = !combinedStallSignal OR takeBranch
 	- Used to enable writing to the PC register and the I/R register of the F/D pipe when a branch is being taken or a stall is not needed
-
-### CPU Diagram:
-![CPU Diagram](<./Processor Full Diagram.jpg>)
 
 ## Game Specifications:
 
